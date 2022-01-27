@@ -1,22 +1,19 @@
 from selenium import webdriver
-# from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
-# from selenium.common.exceptions import StaleElementReferenceException
-# from selenium.webdriver.firefox.options import Options
 import time, os, inspect
+from datetime import datetime
+import base64
+from getpass import getpass
 
 startTime = time.time()
 timeByKeyword = []
 
-# keywordsFile = open('C:\\Users\\git267\\Desktop\\keywords.txt', 'r')
 currentDirectory = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-keywordsFile = open(os.path.join(currentDirectory, 'keywords.txt'), 'r')
+keywordsFile = open(os.path.join(currentDirectory, 'keywords.txt'), 'r', encoding='utf-8')
 getDomain = False
 keyWords = []
-googleEmail = 'your_email@domail.com'
-googlePwd = 'your_pwd'
 
 for line in keywordsFile:
     if not getDomain:
@@ -27,22 +24,11 @@ for line in keywordsFile:
 
 serpResultsPerSearch = []
 
-# f = open('C:\\Users\\git267\\Desktop\\results.csv', 'w+')
-f = open(os.path.join(currentDirectory, 'results.csv'), 'w+')
+currentDateWithTimestamp = datetime.now()
 
-# binary = r'C:\Program Files\Mozilla Firefox\firefox.exe'
-# options = Options()
-# options.add_argument('--headless')
-# options.binary = binary
+f = open(os.path.join(currentDirectory, f'{currentDateWithTimestamp.strftime("%Y%m%d_%H%M%S")}_{site}.csv'), 'w+', encoding='utf-8')
 
-# cap = DesiredCapabilities().FIREFOX
-# cap["marionette"] = False
-#userProfile = webdriver.FirefoxProfile('%USERPROFILE%\\AppData\\Local\\Mozilla\\Firefox\\Profiles\\nn8i4u4j.CustomUser')
-# userProfile = webdriver.FirefoxProfile('C:\\Users\\git267\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\yypjbsha.CloudProfile\\')
-#driver = webdriver.Firefox(userProfile, capabilities=cap, executable_path="%USERPROFILE%\\AppData\\Local\\Geckodriver\\geckodriver.exe")
-# driver = webdriver.Firefox(options=options)
 driver = webdriver.Firefox()
-# driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
 driver.set_page_load_timeout(10)
 driver.set_window_position(0, 0)
 driver.set_window_size(800, 600)
@@ -56,19 +42,18 @@ def GetSerpPosition(pageUrl):
     searchInput = driver.find_element_by_xpath('//input[@class="gLFyf gsfi"]')
     ActionChains(driver).move_to_element(searchInput).click(searchInput).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).key_up(Keys.BACKSPACE).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).key_up(Keys.BACKSPACE).perform()
     if(len(keyWords) > 0):
-        for keyWordLetter in keyWords[0]:
-            searchInput.send_keys(keyWordLetter)
-        # searchInput.send_keys(u'\ue007')
+        for keyWordCharacter in keyWords[0]:
+            searchInput.send_keys(keyWordCharacter)
         searchInput.send_keys(Keys.RETURN)
         time.sleep(2)
-        results = driver.find_elements_by_css_selector('.rc .r > a')
+        results = driver.find_elements_by_css_selector('.g [data-header-feature] > div > a')
         foundInSERP = False
         for result in results:
             serpResultsPerSearch.append(result.get_attribute('href'))
         for index, item in enumerate(serpResultsPerSearch):
             if site in item:
-                # serpList.append(index + 1)
-                print(keyWords[0] + ' is at the poistion number ' + str(index + 1) + ' on SERP')
+                keyWordIndex.append(index + 1)
+                print(f'{keyWords[0]} is at the position #{str(index + 1)} on SERP')
                 f.write(keyWords[0] + ',' + item.rsplit('/', 1)[0] + ',/' + item.rsplit('/', 1)[1] + ',' + str(index + 1) + '\n')
                 foundInSERP = True
                 break
@@ -79,28 +64,18 @@ def GetSerpPosition(pageUrl):
         timeByKeyword.append(startKeywordTime)
         keyWords.pop(0)
         serpResultsPerSearch.clear()
-        driver.switch_to_default_content()
+        driver.switch_to.default_content
         GetSerpPosition(None)
     else:
         f.close()
         driver.quit()
-        firstPageCounter = sum(map(lambda x : x <= 10, keyWordIndex))
-        print('Keywords on the first page: ' + firstPageCounter)
-
-        print('Finished!')
-        # minTime = min(timeByKeyword)
-        # maxTime = max(timeByKeyword)
-        # print('Time taken in seconds: %s' % (time.time() - startTime))
-        # print('Fastest keyword check: %s' % (timeByKeyword[timeByKeyword.index(min(timeByKeyword)) - 1]))
-        # print(min(timeByKeyword))
-        # print('Longest keyword check: %s' % (timeByKeyword[timeByKeyword.index(max(timeByKeyword)) - 1]))
-        # print(max(timeByKeyword))
-
-        
+        firstPageCounter = list(filter(lambda x : x <= 10, keyWordIndex))
+        print(f'Keywords on the first page: {len(firstPageCounter)}')
+        print('Finished!')        
 
 def LoginGoogleAccount(email, pwd):
     print('Performing Login...')
-    driver.get('https://www.google.com/accounts/ServiceLoginAuth')
+    driver.get('https://accounts.google.com/signin/v2/identifier')
     emailInput = driver.find_element_by_xpath('//input[@aria-label="E-mail ou telefone"]')
     emailButton = driver.find_element_by_id('identifierNext')
     ActionChains(driver).move_to_element(emailInput).click(emailInput).send_keys(email).move_to_element(emailButton).click(emailButton).perform()
@@ -109,8 +84,29 @@ def LoginGoogleAccount(email, pwd):
     pwdButton = driver.find_element_by_id('passwordNext')
     ActionChains(driver).move_to_element(pwdInput).click(pwdInput).send_keys(pwd).move_to_element(pwdButton).click(pwdButton).perform()
     time.sleep(3)
-    print('Successful Login')
+    print('Successful Login!\n')
+    GetSerpPosition('https://www.google.com.br/search?q=google')
+
+def CheckLocalCredentials():
+    try:
+        userDataFile = open(os.path.join(currentDirectory, 'user.auth'), 'r', encoding='utf-8')
+        userDataList = []
+
+        for line in userDataFile:
+            userDataList.append(line)
+
+        googleEmail = base64.b64decode(userDataList[0]).decode()
+        googlePwd = base64.b64decode(userDataList[1]).decode()
+    except:
+        googleEmail = input('Type your Google e-mail: ')
+        googlePwd = getpass()
+
+        userDataFile = open(os.path.join(currentDirectory, 'user.auth'), 'w+', encoding='utf-8')
+        userDataFile.write(f'{base64.b64encode(googleEmail.encode()).decode()}\n{base64.b64encode(googlePwd.encode()).decode()}')
+        userDataFile.close()
+
+    LoginGoogleAccount(googleEmail, googlePwd)
+
 
 # Access site and get mpis TO DO
-LoginGoogleAccount(googleEmail, googlePwd)
-GetSerpPosition('https://www.google.com.br/search?q=google')
+CheckLocalCredentials()
