@@ -1,5 +1,4 @@
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 import time, os, inspect
@@ -24,9 +23,13 @@ for line in keywordsFile:
 
 serpResultsPerSearch = []
 
+folderName = 'results'
+if not os.path.exists(folderName):
+    os.makedirs(folderName)
+
 currentDateWithTimestamp = datetime.now()
 
-f = open(os.path.join(currentDirectory, f'{currentDateWithTimestamp.strftime("%Y%m%d_%H%M%S")}_{site}.csv'), 'w+', encoding='utf-8')
+f = open(os.path.join(currentDirectory, folderName, f'{currentDateWithTimestamp.strftime("%Y%m%d_%H%M%S")}_{site}.csv'), 'w+', encoding='utf-8')
 
 driver = webdriver.Firefox()
 driver.set_page_load_timeout(10)
