@@ -7,14 +7,14 @@ import base64
 from getpass import getpass
 
 
-# from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
 
 
-# chrome_options = webdriver.ChromeOptions()
+chrome_options = webdriver.ChromeOptions()
 # chrome_options.add_argument("--headless")
 # chrome_options.add_argument("--no-sandbox")
 # chrome_options.add_argument("--log-level=3")
-# driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
+driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
 
 startTime = time.time()
 timeByKeyword = []
@@ -41,7 +41,7 @@ currentDateWithTimestamp = datetime.now()
 
 f = open(os.path.join(currentDirectory, folderName, f'{currentDateWithTimestamp.strftime("%Y%m%d_%H%M%S")}_{site}.csv'), 'w+', encoding='utf-8')
 
-driver = webdriver.Firefox()
+# driver = webdriver.Firefox()
 driver.set_page_load_timeout(10)
 driver.set_window_position(0, 0)
 driver.set_window_size(800, 600)
