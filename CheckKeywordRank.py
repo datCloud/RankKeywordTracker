@@ -1,11 +1,17 @@
 from selenium import webdriver
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.keys import Keys
 import time, os, inspect
 from datetime import datetime
 import base64
 from getpass import getpass
-
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -89,12 +95,12 @@ def GetSerpPosition(pageUrl):
 def LoginGoogleAccount(email, pwd):
     print('Performing Login...')
     driver.get('https://accounts.google.com/signin/v2/identifier')
-    emailInput = driver.find_element_by_xpath('//input[@aria-label="E-mail ou telefone"]')
-    emailButton = driver.find_element_by_id('identifierNext')
+    emailInput = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, '//input[@aria-label="E-mail ou telefone"]')))
+    emailButton = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.ID, 'identifierNext')))
     ActionChains(driver).move_to_element(emailInput).click(emailInput).send_keys(email).move_to_element(emailButton).click(emailButton).perform()
     time.sleep(3)
-    pwdInput = driver.find_element_by_xpath('//input[@aria-label="Digite sua senha"]')
-    pwdButton = driver.find_element_by_id('passwordNext')
+    pwdInput = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, '//input[@aria-label="Digite sua senha"]')))
+    pwdButton = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, 'passwordNext')))
     ActionChains(driver).move_to_element(pwdInput).click(pwdInput).send_keys(pwd).move_to_element(pwdButton).click(pwdButton).perform()
     time.sleep(3)
     print('Successful Login!\n')
