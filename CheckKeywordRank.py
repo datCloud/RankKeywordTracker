@@ -18,8 +18,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 chrome_options = webdriver.ChromeOptions()
 # chrome_options.add_argument("--headless")
-# chrome_options.add_argument("--no-sandbox")
-# chrome_options.add_argument("--log-level=3")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--log-level=3")
 driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
 
 startTime = time.time()
@@ -50,7 +50,7 @@ f = open(os.path.join(currentDirectory, folderName, f'{currentDateWithTimestamp.
 # driver = webdriver.Firefox()
 driver.set_page_load_timeout(10)
 driver.set_window_position(0, 0)
-driver.set_window_size(800, 600)
+driver.maximize_window()
 
 def GetSerpPosition(pageUrl):
     keyWordIndex = []
@@ -58,14 +58,14 @@ def GetSerpPosition(pageUrl):
         driver.get(pageUrl)
     time.sleep(3)
     startKeywordTime = time.time()
-    searchInput = driver.find_element_by_xpath('//input[@class="gLFyf gsfi"]')
+    searchInput = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input.gLFyf')))
     ActionChains(driver).move_to_element(searchInput).click(searchInput).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).key_up(Keys.BACKSPACE).key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).key_up(Keys.BACKSPACE).perform()
     if(len(keyWords) > 0):
         for keyWordCharacter in keyWords[0]:
             searchInput.send_keys(keyWordCharacter)
         searchInput.send_keys(Keys.RETURN)
         time.sleep(2)
-        results = driver.find_elements_by_css_selector('.g [data-header-feature] > div > a')
+        results = WebDriverWait(driver, 3).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, '.g [data-header-feature] > div > a')))
         foundInSERP = False
         for result in results:
             serpResultsPerSearch.append(result.get_attribute('href'))
@@ -96,12 +96,14 @@ def LoginGoogleAccount(email, pwd):
     print('Performing Login...')
     driver.get('https://accounts.google.com/signin/v2/identifier')
     emailInput = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, '//input[@aria-label="E-mail ou telefone"]')))
-    emailButton = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.ID, 'identifierNext')))
-    ActionChains(driver).move_to_element(emailInput).click(emailInput).send_keys(email).move_to_element(emailButton).click(emailButton).perform()
-    time.sleep(3)
+    emailInput.send_keys(email, Keys.ENTER)
+    # emailButton = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.ID, 'identifierNext')))
+    # ActionChains(driver).move_to_element(emailInput).click(emailInput).send_keys(email).move_to_element(emailButton).click(emailButton).perform()
+    time.sleep(5)
     pwdInput = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, '//input[@aria-label="Digite sua senha"]')))
-    pwdButton = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, 'passwordNext')))
-    ActionChains(driver).move_to_element(pwdInput).click(pwdInput).send_keys(pwd).move_to_element(pwdButton).click(pwdButton).perform()
+    pwdInput.send_keys(pwd, Keys.ENTER)
+    # pwdButton = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, 'passwordNext')))
+    # ActionChains(driver).move_to_element(pwdInput).click(pwdInput).send_keys(pwd, Keys.ENTER).perform()
     time.sleep(3)
     print('Successful Login!\n')
     GetSerpPosition('https://www.google.com.br/search?q=google')
