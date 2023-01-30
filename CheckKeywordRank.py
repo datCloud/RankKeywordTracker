@@ -65,11 +65,15 @@ def GetSerpPosition(pageUrl):
             searchInput.send_keys(keyWordCharacter)
         searchInput.send_keys(Keys.RETURN)
         time.sleep(2)
+        body = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'body')))
+        body.send_keys(Keys.END)
+        time.sleep(1)
         results = WebDriverWait(driver, 3).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, '.g [data-header-feature] > div > a')))
         foundInSERP = False
         for result in results:
             serpResultsPerSearch.append(result.get_attribute('href'))
         for index, item in enumerate(serpResultsPerSearch):
+            print(item)
             if site in item:
                 keyWordIndex.append(index + 1)
                 print(f'{keyWords[0]} is at the position #{str(index + 1)} on SERP')
