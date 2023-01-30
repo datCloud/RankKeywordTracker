@@ -73,7 +73,6 @@ def GetSerpPosition(pageUrl):
         for result in results:
             serpResultsPerSearch.append(result.get_attribute('href'))
         for index, item in enumerate(serpResultsPerSearch):
-            print(item)
             if site in item:
                 keyWordIndex.append(index + 1)
                 print(f'{keyWords[0]} is at the position #{str(index + 1)} on SERP')
